@@ -52,6 +52,7 @@ class BVH
 {
 public:
 	BVH(const dart::dynamics::SkeletonPtr& skel,const std::map<std::string,std::string>& bvh_map);
+	~BVH();
 
 	Eigen::VectorXd GetMotion(double t);
 
@@ -60,16 +61,20 @@ public:
 	double GetMaxTime(){return (mNumTotalFrames)*mTimeStep;}
 	double GetTimeStep(){return mTimeStep;}
 	void Parse(const std::string& file,bool cyclic=true);
-	
+    void ParseStr(const std::string &str, bool cyclic);
+    void _Parse(std::istream &is, bool cyclic);
+
 	const std::map<std::string,std::string>& GetBVHMap(){return mBVHMap;}
 	const Eigen::Isometry3d& GetT0(){return T0;}
 	const Eigen::Isometry3d& GetT1(){return T1;}
 	bool IsCyclic(){return mCyclic;}
 private:
 	bool mCyclic;
+    std::map<std::string,BVHNode*> mMap;
 	std::vector<Eigen::VectorXd> mMotions;
-	std::map<std::string,BVHNode*> mMap;
-	double mTimeStep;
+    std::vector<BVHNode* > mNodes;
+    std::vector<std::string> mNodeNames;
+    double mTimeStep;
 	int mNumTotalChannels;
 	int mNumTotalFrames;
 
@@ -77,9 +82,10 @@ private:
 
 	dart::dynamics::SkeletonPtr mSkeleton;
 	std::map<std::string,std::string> mBVHMap;
+    std::map<std::string,std::string> mBVHToSkelMap;
 
-	Eigen::Isometry3d T0,T1;
-	BVHNode* ReadHierarchy(BVHNode* parent,const std::string& name,int& channel_offset,std::ifstream& is);
+    Eigen::Isometry3d T0,T1;
+	BVHNode* ReadHierarchy(BVHNode* parent, const std::string& name, int& channel_offset, std::istream& is);
 };
 
 };

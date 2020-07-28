@@ -11,9 +11,10 @@ using namespace MASS;
 
 Environment::
 Environment()
-	:mControlHz(30),mSimulationHz(900),mWorld(std::make_shared<World>()),mUseMuscle(true),w_q(0.65),w_v(0.1),w_ee(0.15),w_com(0.1)
+        :mControlHz(30),mSimulationHz(900),mWorld(std::make_shared<World>()),mUseMuscle(true),w_q(0.65),w_v(0.1),w_ee(0.15),w_com(0.1)
 {
-
+    std::random_device rd;
+    generator.seed(rd());
 }
 
 void
@@ -38,64 +39,58 @@ Initialize(const std::string& meta_file,bool load_obj)
 
 		std::getline(ifs,str);
 		ss.str(str);
-		ss>>index;
-		if(!index.compare("use_muscle"))
+		ss >> index;
+		if(index== "use_muscle")
 		{	
 			std::string str2;
 			ss>>str2;
-			if(!str2.compare("true"))
-				this->SetUseMuscle(true);
-			else
-				this->SetUseMuscle(false);
+            this->SetUseMuscle(str2 == "true");
 		}
-		else if(!index.compare("con_hz")){
+		else if(index == "con_hz"){
 			int hz;
-			ss>>hz;
+			ss >> hz;
 			this->SetControlHz(hz);
 		}
-		else if(!index.compare("sim_hz")){
+        else if(index == "sim_hz"){
 			int hz;
-			ss>>hz;
+			ss >> hz;
 			this->SetSimulationHz(hz);
 		}
-		else if(!index.compare("sim_hz")){
+		else if(index == "sim_hz"){
 			int hz;
-			ss>>hz;
+			ss >> hz;
 			this->SetSimulationHz(hz);
 		}
-		else if(!index.compare("skel_file")){
+		else if(index == "skel_file"){
 			std::string str2;
-			ss>>str2;
+			ss >> str2;
 
 			character->LoadSkeleton(std::string(MASS_ROOT_DIR)+str2,load_obj);
 		}
-		else if(!index.compare("muscle_file")){
+		else if(index == "muscle_file"){
 			std::string str2;
-			ss>>str2;
+			ss >> str2;
 			if(this->GetUseMuscle())
 				character->LoadMuscles(std::string(MASS_ROOT_DIR)+str2);
 		}
-		else if(!index.compare("bvh_file")){
-			std::string str2,str3;
+		else if(index == "bvh_file"){
+			std::string str2, str3;
 
-			ss>>str2>>str3;
+            ss >> str2 >> str3;
 			bool cyclic = false;
-			if(!str3.compare("true"))
+			if(str3 == "true")
 				cyclic = true;
 			character->LoadBVH(std::string(MASS_ROOT_DIR)+str2,cyclic);
 		}
-		else if(!index.compare("reward_param")){
+        else if(index == "reward_param"){
 			double a,b,c,d;
-			ss>>a>>b>>c>>d;
-			this->SetRewardParameters(a,b,c,d);
+            ss >> a >> b >> c >> d;
+            this->SetRewardParameters(a, b, c, d);
 
 		}
-
-
 	}
 	ifs.close();
-	
-	
+
 	double kp = 300.0;
 	character->SetPDParameters(kp,sqrt(2*kp));
 	this->SetCharacter(character);
@@ -117,7 +112,7 @@ Initialize()
 		mRootJointDof = 3;	
 	else
 		mRootJointDof = 0;
-	mNumActiveDof = mCharacter->GetSkeleton()->getNumDofs()-mRootJointDof;
+	mNumActiveDof = mCharacter->GetSkeleton()->getNumDofs() - mRootJointDof;
 	if(mUseMuscle)
 	{
 		int num_total_related_dofs = 0;
@@ -153,8 +148,10 @@ Reset(bool RSI)
 	
 	double t = 0.0;
 
-	if(RSI)
-		t = dart::math::random(0.0,mCharacter->GetBVH()->GetMaxTime()*0.9);
+	if(RSI) {
+        std::uniform_real_distribution<double> uniform(0., mCharacter->GetBVH()->GetMaxTime());
+        t = uniform(generator);
+	}
 	mWorld->setTime(t);
 	mCharacter->Reset();
 
@@ -233,7 +230,7 @@ GetDesiredTorques()
 {
 	Eigen::VectorXd p_des = mTargetPositions;
 	p_des.tail(mTargetPositions.rows()-mRootJointDof) += mAction;
-	mDesiredTorque = mCharacter->GetSPDForces(p_des);
+	mDesiredTorque = mCharacter->GetSPDForces(p_des, 1./mSimulationHz);
 	return mDesiredTorque.tail(mDesiredTorque.rows()-mRootJointDof);
 }
 Eigen::VectorXd

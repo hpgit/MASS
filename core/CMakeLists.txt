@@ -1,10 +1,8 @@
-cmake_minimum_required(VERSION 2.8.6)
+cmake_minimum_required(VERSION 3.10.2)
 project(mss)
 
 SET(CMAKE_BUILD_TYPE Release CACHE STRING
 	"Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel.")
-
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR})
 
 find_package(DART REQUIRED COMPONENTS collision-bullet CONFIG)
 find_package(TinyXML REQUIRED)

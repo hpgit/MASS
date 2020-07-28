@@ -10,6 +10,7 @@ class Character
 {
 public:
 	Character();
+	~Character();
 
 	void LoadSkeleton(const std::string& path,bool create_obj = false);
 	void LoadMuscles(const std::string& path);
@@ -18,9 +19,9 @@ public:
 	void Reset();	
 	void SetPDParameters(double kp, double kv);
 	void AddEndEffector(const std::string& body_name){mEndEffectors.push_back(mSkeleton->getBodyNode(body_name));}
-	Eigen::VectorXd GetSPDForces(const Eigen::VectorXd& p_desired);
+	Eigen::VectorXd GetSPDForces(const Eigen::VectorXd& p_desired, double dt);
 
-	Eigen::VectorXd GetTargetPositions(double t,double dt);
+	Eigen::VectorXd GetTargetPositions(double t, double dt);
 	std::pair<Eigen::VectorXd,Eigen::VectorXd> GetTargetPosAndVel(double t,double dt);
 	
 	

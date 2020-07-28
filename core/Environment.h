@@ -3,6 +3,7 @@
 #include "dart/dart.hpp"
 #include "Character.h"
 #include "Muscle.h"
+
 namespace MASS
 {
 
@@ -74,6 +75,8 @@ private:
 	MuscleTuple mCurrentMuscleTuple;
 	int mSimCount;
 	int mRandomSampleIndex;
+
+    std::default_random_engine generator;
 
 	double w_q,w_v,w_ee,w_com;
 };
